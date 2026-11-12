@@ -1,0 +1,11 @@
+{
+  "name": "ice-slide",
+  "version": "0.1.0",
+  "description": "A procedurally generated sliding-ice puzzle game with a penguin, fish, and an igloo.",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "start": "npx --yes serve ."
+  },
+  "license": "MIT"
+}

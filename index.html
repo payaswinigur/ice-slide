@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Ice Slide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Corner buttons: rules on the left, menu on the right -->
+<button class="icon-btn corner-left" id="helpBtn" aria-label="How to play" aria-haspopup="dialog">?</button>
+<button class="icon-btn corner-right" id="menuBtn" aria-label="Open menu" aria-controls="menu" aria-expanded="false">
+  <span class="bars" aria-hidden="true"><span></span><span></span><span></span></span>
+  <span class="badge" id="menuBadge" hidden></span>
+</button>
+
+<main class="stage">
+  <header class="top">
+    <h1>Ice Slide</h1>
+    <p class="tagline">Get home to the igloo and collect some fish on the way back.</p>
+    <nav class="map-nav" aria-label="Daily maps">
+      <button class="link-btn" id="prevDay">&lt; Prev</button>
+      <span class="map-label" id="mapLabel"></span>
+      <button class="link-btn" id="nextDay">Next &gt;</button>
+    </nav>
+    <p class="map-sub" id="mapSub"></p>
+  </header>
+
+  <div class="board" id="board">
+    <canvas id="cv" aria-label="Ice puzzle board"></canvas>
+    <div class="win" id="win" hidden>
+      <div class="win-card">
+        <h2 id="winTitle">Home!</h2>
+        <div class="stars" id="stars"></div>
+        <p id="winText"></p>
+        <p class="win-ach" id="winAch" hidden></p>
+        <div class="row">
+          <button class="btn" id="replay">Replay</button>
+          <button class="btn primary" id="next">Next map</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats line under the board -->
+  <div class="hud">
+    <span>Moves: <b id="moves">0</b></span>
+    <span id="bestStars"></span>
+    <span>Fish: <b id="coins">0/3</b></span>
+  </div>
+  <ul class="goals" id="goalList" aria-label="Goals for this map"></ul>
+  <p class="status" id="status" aria-live="polite"></p>
+
+  <div class="controls">
+    <button class="btn" id="undo">Undo</button>
+    <button class="btn" id="restart">Restart</button>
+    <button class="btn" id="hint">Hint</button>
+    <button class="btn primary" id="newMap">New map</button>
+  </div>
+
+  <div class="pad" aria-label="Direction controls">
+    <button class="btn u" data-dir="up" aria-label="Up">▲</button>
+    <button class="btn l" data-dir="left" aria-label="Left">◀</button>
+    <button class="btn d" data-dir="down" aria-label="Down">▼</button>
+    <button class="btn r" data-dir="right" aria-label="Right">▶</button>
+  </div>
+</main>
+
+<!-- Sidebar menu: slides in from the right -->
+<div class="scrim" id="scrim" hidden></div>
+<aside class="menu" id="menu" aria-label="Menu" inert>
+  <div class="menu-head">
+    <h2>Menu</h2>
+    <button class="icon-btn small" id="menuClose" aria-label="Close menu">×</button>
+  </div>
+
+  <section class="menu-sec">
+    <h3>Daily map</h3>
+    <p class="menu-note" id="menuDaily"></p>
+    <button class="btn primary wide daily-btn" id="dailyBtn">Play today's daily<span class="dot" id="dailyDot" hidden></span></button>
+  </section>
+
+  <section class="menu-sec">
+    <h3>New map</h3>
+    <div class="seg" role="group" aria-label="Mode">
+      <button id="m-maze" data-mode="maze">Maze</button>
+      <button id="m-ice" data-mode="ice">Ice field</button>
+    </div>
+    <div class="seg" role="group" aria-label="Difficulty">
+      <button id="d-easy" data-diff="easy">Easy</button>
+      <button id="d-medium" data-diff="medium">Medium</button>
+      <button id="d-hard" data-diff="hard">Hard</button>
+    </div>
+    <button class="btn wide" id="menuNewMap">Start new map</button>
+  </section>
+
+  <section class="menu-sec">
+    <h3>Achievements <span class="menu-count"><span id="achCount"></span> · <span id="starTotal"></span>★</span></h3>
+    <ul class="ach-grid" id="achGrid"></ul>
+  </section>
+
+  <section class="menu-sec">
+    <h3>Stats</h3>
+    <dl class="stats" id="stats"></dl>
+    <button class="link-btn quiet" id="resetProgress">Reset progress</button>
+  </section>
+</aside>
+
+<!-- How to play popup (the ? button). <dialog> gives us the dimmed backdrop and Esc-to-close for free. -->
+<dialog class="dialog" id="help" aria-labelledby="helpTitle">
+  <div class="dialog-body">
+    <div class="menu-head">
+      <h2 id="helpTitle">How to play</h2>
+      <button class="icon-btn small" id="helpClose" aria-label="Close">×</button>
+    </div>
+    <ul class="rules">
+      <li><span class="spr spr-penguin"></span><p><b>Slide.</b> Use the arrow keys, WASD, or swipe. The penguin keeps sliding until something stops it.</p></li>
+      <li><span class="spr spr-rock"></span><p><b>Rocks and walls</b> stop you on the square right before them. In a maze you slide straight past side passages.</p></li>
+      <li><span class="spr spr-snow"></span><p><b>Snow</b> stops you right on top of it.</p></li>
+      <li><span class="spr spr-fish"></span><p><b>Fish</b> are caught when you slide over them.</p></li>
+      <li><span class="spr spr-igloo"></span><p><b>The igloo</b> is home. Reach it to finish the map.</p></li>
+    </ul>
+    <h3>Earn 3 stars</h3>
+    <ol class="star-list">
+      <li><span class="star">★</span> Get home</li>
+      <li><span class="star">★</span> Catch all 3 fish</li>
+      <li><span class="star">★</span> Do both in the fewest possible moves</li>
+    </ol>
+    <h3>Keys</h3>
+    <dl class="keys">
+      <dt>Z</dt><dd>Undo</dd><dt>R</dt><dd>Restart</dd><dt>H</dt><dd>Hint</dd>
+      <dt>N</dt><dd>New map</dd><dt>Y</dt><dd>Today's daily</dd><dt>?</dt><dd>This help</dd>
+    </dl>
+    <p class="menu-note">Everyone gets the same daily map each day. Use Prev and Next to play past ones.</p>
+    <button class="btn primary wide" id="helpGo">Let's slide!</button>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="js/core.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
